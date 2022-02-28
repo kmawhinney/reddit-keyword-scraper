@@ -31,30 +31,34 @@ my_stopwords = ["ELI5", "ELI5:", "how", "why", "what", "How", "Why", "What", ":"
 
 weekly_top_list = []
 
+# User selects functionality
+user_subreddit = input("Enter name of subreddit you want to search: r/")
+function_selector = input("Find most popular keywords (input 1), or count specific keyword appearances (input 2): ")
+print(function_selector)
 
-# Returns most common keywords in the titles of the past week's top 1000 posts on r/explainlikeimfive
-for submission in reddit.subreddit("explainlikeimfive").top("week", limit=50):
-    if not submission.stickied:
-        split_submission = submission.title.split()
-        for word in split_submission:
-            if word not in nltk_stopwords:
-                if word not in my_stopwords:
-                    weekly_top_list.append(word)
-Counter = Counter(weekly_top_list)
-print(Counter.most_common(10))
+# Returns most common keywords in the titles of the past week's top 1000 posts on user-inputted subreddit
+if function_selector == "1":
+    popular_keyword_count = int(input("Number of popular keywords you want returned: "))
+    for submission in reddit.subreddit(user_subreddit).top("week", limit=50):
+        if not submission.stickied:
+            split_submission = submission.title.split()
+            for word in split_submission:
+                if word not in nltk_stopwords:
+                    if word not in my_stopwords:
+                        weekly_top_list.append(word)
+    Counter = Counter(weekly_top_list)
+    print(Counter.most_common(popular_keyword_count))
 
-
-# Returns total amount of times user-inputted keyword has been in a title on r/explainlikeimfive, since start_time
-start_time = int(datetime.datetime(2022, 2, 1).timestamp())
-keyword = input("Keyword: ")
-
-submissions = api.search_submissions(after=start_time,
-                                     q=keyword,
-                                     subreddit="explainlikeimfive",
-                                     filter=["url", "author", "title", "subreddit"])
-submission_count = 0
-
-for submission in submissions:
-    print(submission.title)
-    submission_count = submission_count + 1
-print(submission_count)
+# Returns total amount of times user-inputted keyword has been in a title on user-inputted subreddit, since start_time
+if function_selector == "2":
+    specific_keyword = input("Keyword you are searching for: ")
+    start_time = int(datetime.datetime(2022, 2, 21).timestamp())
+    submissions = api.search_submissions(after=start_time,
+                                         q=specific_keyword,
+                                         subreddit=user_subreddit,
+                                         filter=["url", "author", "title", "subreddit"])
+    submission_count = 0
+    for submission in submissions:
+        print(submission.title)
+        submission_count = submission_count + 1
+    print(submission_count)
